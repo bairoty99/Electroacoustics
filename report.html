@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقرير مشروع الكهروصوتيات</title>
+<style>
+  @page { size: A4; margin: 1.6cm; }
+  body {
+    font-family: "Segoe UI", "Tahoma", "Arial", sans-serif;
+    direction: rtl; text-align: justify;
+    color: #1f2d3d; line-height: 1.7; font-size: 13px;
+    margin: 0 auto; max-width: 900px; padding: 24px;
+    background: #ffffff;
+  }
+  h1 {
+    color: #0d3b66; text-align: center; font-size: 24px;
+    border-bottom: 4px solid #1d70b8; padding-bottom: 12px; margin-bottom: 6px;
+  }
+  .subtitle { text-align: center; color: #5a6b7b; font-size: 13px; margin-bottom: 24px; }
+  h2 {
+    color: #ffffff; background: linear-gradient(90deg,#1d70b8,#2e8bc0);
+    padding: 7px 14px; border-radius: 6px; font-size: 16px; margin-top: 26px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+  }
+  h3 { color: #0d3b66; font-size: 14px; margin-bottom: 4px; }
+  .eq {
+    background: #f0f6fb; border-right: 4px solid #1d70b8;
+    padding: 10px 16px; margin: 12px 0; border-radius: 4px;
+    direction: ltr; text-align: center; font-family: "Cambria Math","Times New Roman",serif;
+    font-size: 15px; color: #0d3b66;
+  }
+  .var { background:#fffbe6; border-right:4px solid #f4a300; padding:8px 14px; border-radius:4px; margin:8px 0; font-size:12.5px; }
+  table { width:100%; border-collapse: collapse; margin:14px 0; font-size:12.5px; }
+  th { background:#0d3b66; color:#fff; padding:8px; }
+  td { border:1px solid #c5d2de; padding:7px 10px; }
+  tr:nth-child(even){ background:#f5f9fc; }
+  .diagram { text-align:center; margin:18px 0; }
+  .caption { text-align:center; color:#5a6b7b; font-size:11.5px; margin-top:4px; font-style:italic; }
+  ol.refs li { margin-bottom:6px; }
+  .abstract { background:#eef6f0; border:1px solid #bcd9c5; border-radius:8px; padding:14px 18px; }
+  strong { color:#0d3b66; }
+</style>
+</head>
+<body>
+
+<h1>نمذجة البيئات الصوتية والمعالجة الرقمية المتكيفة للإشارة</h1>
+<div class="subtitle">تقرير مشروع مادة الكهروصوتيات &mdash; إلغاء الصدى المتكيف (AEC / NLMS) ومحاكاة الغرفة والمعايرة الطيفية</div>
+
+<h2>1. ملخص المشروع (Abstract)</h2>
+<div class="abstract">
+يتناول هذا المشروع نمذجة سلوك الإشارة الصوتية داخل البيئات المغلقة عبر تمثيل الغرفة باستجابتها النبضية (Room Impulse Response)، ثم معالجة التشويهات الناجمة عن هذا السلوك في أنظمة الاتصالات الحديثة. ينقسم العمل إلى محورين متكاملين: الأول هو <strong>إلغاء الصدى الصوتي المتكيف (AEC)</strong> باستخدام خوارزمية NLMS بطول مرشّح يبلغ 1024 معاملاً لمحاكاة المسار الصوتي المجهول وطرحه؛ والثاني هو <strong>محاكاة الغرفة والمعالجة الطيفية</strong> عبر الطي الرقمي (Convolution) بين الكلام والاستجابة النبضية، يتبعه ترشيح معايرة (Equalization) للتحكم بتوزّع الطاقة الترددية. الهدف الجامع هو استعادة وضوح الكلام (Speech Intelligibility) في أنظمة التداول عن بُعد (Teleconferencing) من خلال أدوات معالجة الإشارة الرقمية.
+</div>
+
+<h2>2. الهدف من المشروع (Project Objectives)</h2>
+<p>تتمثل الأهداف الهندسية والتعليمية في: فهم الاستجابة النبضية للغرف بوصفها بصمة صوتية تجمع كل مسارات الانعكاس؛ دراسة الفلاتر التكيفية وآلية تقاربها نحو نموذج المسار الحقيقي؛ تطبيق الطي الرقمي لإضافة أثر الغرفة بشكل واقعي على إشارة جافة (Dry)؛ والتحكم بالمحتوى الترددي عبر مرشّحات معايرة منتقاة (تخميد عالٍ، تخميد منخفض، تعزيز نطاق)، إضافة إلى تحليل النتائج عبر الكثافة الطيفية للقدرة والمخطط الطيفي.</p>
+
+<h2>3. الظاهرة المطلوب دراستها (Phenomenon Under Study)</h2>
+<p><strong>الصدى الصوتي (Acoustic Echo):</strong> ينشأ عندما يلتقط الميكروفون نسخة من إشارة المجهار بعد ارتدادها عن جدران الغرفة وأسطحها، فتعود الإشارة البعيدة إلى المتحدث الأصلي عبر مسارات متعددة ذات تأخيرات وتخميدات مختلفة، مكوّنة استجابة نبضية ممتدة زمنياً.</p>
+<p><strong>التخمير (Reverberation):</strong> هو التذيّل الزمني للطاقة الصوتية الناتج عن تراكب الانعكاسات المتأخرة. تتحكم أبعاد الغرفة ومعاملات امتصاص أسطحها في زمن التخمير T&#8326;&#8320; (الزمن اللازم لانخفاض شدة الصوت بمقدار 60&nbsp;dB). كلما زادت الانعكاسية، طال التذيّل وزاد تداخل المقاطع الكلامية المتتالية.</p>
+
+<h2>4. توصيف المشكلة (Problem Statement)</h2>
+<p>في قاعات الاستماع وأنظمة التداول عن بُعد، يؤدي تراكب المسارات المنعكسة إلى تداخل الإشارات الزمني وانخفاض وضوح الكلام، ويتفاقم الأثر مع طول زمن التخمير. هندسياً، يُشترط لتجانس الحقل الصوتي ألا يتجاوز تفاوت الجهارة بين مواقع المستمعين حدود <strong>3&nbsp;dB إلى 4&nbsp;dB</strong>. كما أن الفاصل الزمني الحرج بين الإشارة المباشرة وانعكاسها المؤثر يقدّر بنحو &Delta;t = 0.1 sec، إذ يبدأ الانعكاس المتأخر عن هذا الحد يُدرك كصدى منفصل يضر بالوضوح بدلاً من أن يعزز الجهارة.</p>
+
+<h2>5. الحل المقترح (Proposed Solution)</h2>
+<p>يُعالج الصدى عبر <strong>مرشّح متكيف</strong> يحاكي المسار الصوتي المجهول للغرفة، فيقدّر نسخة الصدى رياضياً ويطرحها من إشارة الميكروفون لينتج إشارة خطأ نظيفة. وتُحاكى بيئة الغرفة عبر <strong>الطي الرقمي</strong> بين الكلام الجاف واستجابة الغرفة، ثم يُطبَّق <strong>معادل طيفي (Equalizer)</strong> لإعادة تشكيل توزّع الطاقة على الترددات (تخميد العالي، أو حذف الباص، أو تعزيز نطاق وسطي)، بما يستعيد التوازن الطيفي المطلوب للكلام.</p>
+
+<h2>6. الأسس النظرية للحل المقترح (Theoretical Foundation)</h2>
+<h3>خوارزمية NLMS</h3>
+<p>يجري تحديث متجه معاملات المرشّح وفق العلاقة:</p>
+<div class="eq">w(n+1) = w(n) + [ &mu; / ( &#8214;x(n)&#8214;&sup2; + &epsilon; ) ] &middot; e(n) &middot; x(n)</div>
+<div class="eq">e(n) = d(n) &minus; y(n)</div>
+<div class="var">
+حيث <strong>w(n)</strong> متجه معاملات المرشّح، <strong>x(n)</strong> متجه عينات الدخل (الإشارة البعيدة)، <strong>&mu;</strong> ثابت خطوة التكيّف، <strong>&epsilon;</strong> ثابت صغير موجب يمنع القسمة على صفر، <strong>e(n)</strong> إشارة الخطأ، <strong>d(n)</strong> الإشارة المرغوبة (خرج الميكروفون المتضمن للصدى)، و<strong>y(n)</strong> خرج المرشّح المقدِّر للصدى.
+</div>
+<p>يُفضَّل الشكل <strong>المنظَّم (Normalized)</strong> مع إشارات الكلام لأن طاقة الكلام شديدة التغير، فالقسمة على &#8214;x(n)&#8214;&sup2; تجعل خطوة التكيّف مستقلة عن مستوى الإشارة، ما يضمن استقرار التقارب وسرعته رغم تذبذب الجهارة.</p>
+<h3>طي التخمير (Convolution Reverb)</h3>
+<div class="eq">y(n) = x(n) &lowast; h(n) = &Sigma;<sub>k=0</sub><sup>L&minus;1</sup> h(k) &middot; x(n&minus;k)</div>
+<div class="var">حيث <strong>x(n)</strong> الإشارة الجافة، <strong>h(n)</strong> الاستجابة النبضية للغرفة بطول L، و<strong>y(n)</strong> الإشارة المعالَجة الحاملة لبصمة الغرفة.</div>
+
+<h2>7. شرح المرشحات المستخدمة (Description of Filters Used)</h2>
+<p>تنقسم المرشّحات إلى نوعين: <strong>المرشّح التكيفي ذو 1024 معاملاً (Taps)</strong> المخصص لتقدير المسار الصوتي ومحاكاة الصدى لحظياً، إذ يحدد عدد المعاملات أقصى تأخير زمني يمكن نمذجته (نحو 128&nbsp;ms عند تردد عيّنة 8&nbsp;kHz). و<strong>مرشّحات المعايرة الطيفية (Equalizer)</strong> ذات طبيعة ثابتة (IIR من نوع Butterworth و iirpeak) لإعادة توزيع طاقة الترددات بين الباص (Bass) والوسط (Mid) والحاد (Treble). ويُستخدم مفهوم <strong>الأوكتاف (Octave)</strong> لتقسيم المحور الترددي لوغاريتمياً بما يوافق الإدراك السمعي، بينما تكشف <strong>كثافة القدرة الطيفية (PSD)</strong> كيفية توزّع طاقة الإشارة على الترددات قبل المعالجة وبعدها.</p>
+
+<h2>8. المخطط النظري (Theoretical Block Diagram)</h2>
+<div class="diagram">
+<svg width="640" height="260" viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="13">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#0d3b66"/>
+    </marker>
+  </defs>
+  <!-- input -->
+  <text x="600" y="60" fill="#0d3b66" text-anchor="end">x(n) الإشارة البعيدة</text>
+  <line x1="500" y1="70" x2="430" y2="70" stroke="#0d3b66" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="500" y1="70" x2="500" y2="180" stroke="#0d3b66" stroke-width="2"/>
+  <line x1="500" y1="180" x2="430" y2="180" stroke="#0d3b66" stroke-width="2" marker-end="url(#arr)"/>
+  <!-- room H(z) -->
+  <rect x="300" y="45" width="130" height="50" rx="8" fill="#e7f0f8" stroke="#1d70b8" stroke-width="2"/>
+  <text x="365" y="70" text-anchor="middle" fill="#0d3b66">H(z) الغرفة</text>
+  <text x="365" y="86" text-anchor="middle" fill="#888" font-size="11">(مجهول)</text>
+  <!-- adaptive W(z) -->
+  <rect x="300" y="155" width="130" height="50" rx="8" fill="#fdeede" stroke="#f4a300" stroke-width="2"/>
+  <text x="365" y="180" text-anchor="middle" fill="#9a6400">W(z) المرشّح</text>
+  <text x="365" y="196" text-anchor="middle" fill="#9a6400" font-size="11">المتكيف</text>
+  <!-- summing node -->
+  <circle cx="180" cy="125" r="24" fill="#0d3b66"/>
+  <text x="180" y="130" text-anchor="middle" fill="#fff" font-size="18">&Sigma;</text>
+  <text x="168" y="108" fill="#fff" font-size="13">+</text>
+  <text x="168" y="150" fill="#fff" font-size="13">&minus;</text>
+  <!-- d(n) line from room to sum -->
+  <line x1="300" y1="70" x2="230" y2="70" stroke="#1d70b8" stroke-width="2"/>
+  <line x1="230" y1="70" x2="230" y2="112" stroke="#1d70b8" stroke-width="2"/>
+  <line x1="230" y1="112" x2="204" y2="118" stroke="#1d70b8" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="245" y="62" fill="#1d70b8" font-size="11">d(n) صدى</text>
+  <!-- y(n) line from W to sum -->
+  <line x1="300" y1="180" x2="230" y2="180" stroke="#f4a300" stroke-width="2"/>
+  <line x1="230" y1="180" x2="230" y2="138" stroke="#f4a300" stroke-width="2"/>
+  <line x1="230" y1="138" x2="204" y2="132" stroke="#f4a300" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="245" y="196" fill="#9a6400" font-size="11">y(n)</text>
+  <!-- error out -->
+  <line x1="156" y1="125" x2="60" y2="125" stroke="#0d3b66" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="95" y="116" fill="#0d3b66">e(n) الخطأ</text>
+  <!-- feedback to W -->
+  <line x1="90" y1="125" x2="90" y2="230" stroke="#2e8b57" stroke-width="2"/>
+  <line x1="90" y1="230" x2="365" y2="230" stroke="#2e8b57" stroke-width="2"/>
+  <line x1="365" y1="230" x2="365" y2="207" stroke="#2e8b57" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="220" y="246" fill="#2e8b57" font-size="12">تحديث المعاملات وفق NLMS</text>
+</svg>
+<div class="caption">الشكل 1: مخطط الكتل النظري لمنظومة إلغاء الصدى المتكيف &mdash; تتقارب W(z) نحو H(z) حتى تؤول e(n) إلى الكلام النظيف.</div>
+</div>
+
+<h2>9. مخطط وظيفي عملي (Operational Flowchart)</h2>
+<div class="diagram">
+<svg width="360" height="560" viewBox="0 0 360 560" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="12">
+  <defs>
+    <marker id="arr2" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1d70b8"/>
+    </marker>
+  </defs>
+  <!-- start -->
+  <ellipse cx="180" cy="25" rx="60" ry="20" fill="#2e8b57"/>
+  <text x="180" y="30" text-anchor="middle" fill="#fff">بدء</text>
+  <line x1="180" y1="45" x2="180" y2="62" stroke="#1d70b8" stroke-width="2" marker-end="url(#arr2)"/>
+  <rect x="40" y="64" width="280" height="40" rx="6" fill="#e7f0f8" stroke="#1d70b8"/>
+  <text x="180" y="89" text-anchor="middle" fill="#0d3b66">تسجيل إشارة الصوت x(n) عند fs = 8 kHz</text>
+  <line x1="180" y1="104" x2="180" y2="121" stroke="#1d70b8" stroke-width="2" marker-end="url(#arr2)"/>
+  <rect x="40" y="123" width="280" height="40" rx="6" fill="#e7f0f8" stroke="#1d70b8"/>
+  <text x="180" y="148" text-anchor="middle" fill="#0d3b66">تحميل استجابة الغرفة room.mat &rarr; h(n)</text>
+  <line x1="180" y1="163" x2="180" y2="180" stroke="#1d70b8" stroke-width="2" marker-end="url(#arr2)"/>
+  <rect x="40" y="182" width="280" height="40" rx="6" fill="#e7f0f8" stroke="#1d70b8"/>
+  <text x="180" y="207" text-anchor="middle" fill="#0d3b66">الطي: y(n) = x(n) &lowast; h(n) (تخمير)</text>
+  <line x1="180" y1="222" x2="180" y2="239" stroke="#1d70b8" stroke-width="2" marker-end="url(#arr2)"/>
+  <!-- decision -->
+  <polygon points="180,241 290,286 180,331 70,286" fill="#fdeede" stroke="#f4a300" stroke-width="2"/>
+  <text x="180" y="282" text-anchor="middle" fill="#9a6400">اختيار نمط</text>
+  <text x="180" y="298" text-anchor="middle" fill="#9a6400">المعايرة EQ</text>
+  <line x1="180" y1="331" x2="180" y2="348" stroke="#1d70b8" stroke-width="2" marker-end="url(#arr2)"/>
+  <rect x="40" y="350" width="280" height="40" rx="6" fill="#e7f0f8" stroke="#1d70b8"/>
+  <text x="180" y="375" text-anchor="middle" fill="#0d3b66">تطبيق الترشيح &rarr; y_eq</text>
+  <line x1="180" y1="390" x2="180" y2="407" stroke="#1d70b8" stroke-width="2" marker-end="url(#arr2)"/>
+  <rect x="40" y="409" width="280" height="40" rx="6" fill="#e7f0f8" stroke="#1d70b8"/>
+  <text x="180" y="434" text-anchor="middle" fill="#0d3b66">إزالة التردد الأساسي LPC &rarr; y_final</text>
+  <line x1="180" y1="449" x2="180" y2="466" stroke="#1d70b8" stroke-width="2" marker-end="url(#arr2)"/>
+  <rect x="40" y="468" width="280" height="40" rx="6" fill="#e7f0f8" stroke="#1d70b8"/>
+  <text x="180" y="493" text-anchor="middle" fill="#0d3b66">تحليل PSD + Spectrogram</text>
+  <line x1="180" y1="508" x2="180" y2="525" stroke="#1d70b8" stroke-width="2" marker-end="url(#arr2)"/>
+  <ellipse cx="180" cy="545" rx="60" ry="18" fill="#0d3b66"/>
+  <text x="180" y="550" text-anchor="middle" fill="#fff">نهاية</text>
+</svg>
+<div class="caption">الشكل 2: المخطط التدفقي العملي لتسلسل التنفيذ داخل reverb_equalization.m</div>
+</div>
+
+<h2>10. اعتبارات عملية (Practical Considerations)</h2>
+<p>يحكم <strong>حجم خطوة التكيّف &mu;</strong> المفاضلة بين السرعة والدقة: فالقيمة الكبيرة تسرّع التقارب لكنها تزيد الخطأ المتبقي وقد تهدد الاستقرار، والقيمة الصغيرة تحسّن الدقة على حساب البطء. أما طول المرشّح <strong>(1024 معاملاً)</strong> فيرفع كلفة الحساب لحظياً ويهدد قيود المعالجة في الوقت الحقيقي (Real-time DSP). ويجب أن تقل شدة <strong>ضجيج الخلفية</strong> (مثل ضجيج أجهزة التكييف) بمقدار <strong>25&nbsp;dB</strong> على الأقل عن الإشارة المفيدة، وإلا تدهور أداء المرشّح التكيفي.</p>
+
+<h2>11. الإجراء العملي والأدوات (Experimental Procedure &amp; Tools)</h2>
+<table>
+  <tr><th>الأداة</th><th>الوظيفة</th></tr>
+  <tr><td>MATLAB</td><td>بيئة العمل الرئيسة مع صناديق أدوات معالجة الإشارة</td></tr>
+  <tr><td>room.mat</td><td>الاستجابة النبضية (البصمة الصوتية) للغرفة المستخدمة في الطي وفي مشروع AEC</td></tr>
+  <tr><td>css.mat</td><td>إشارة مصطنعة (Composite Source Signal) من نحو 20 مقطعاً صوتياً لتشكيل إشارة المتحدث L_speaker</td></tr>
+  <tr><td>pwelch</td><td>تقدير الكثافة الطيفية للقدرة (PSD)</td></tr>
+  <tr><td>spectrogram</td><td>إظهار التطور الزمني-الترددي للإشارة</td></tr>
+  <tr><td>butter / iirpeak</td><td>مرشّحات المعايرة الطيفية (تخميد وتعزيز النطاقات)</td></tr>
+  <tr><td>lpc</td><td>استخلاص مسار الصوت وإزالة الدورية (تأثير الهمس)</td></tr>
+</table>
+
+<h2>12. الخلاصة والاستنتاجات (Conclusion)</h2>
+<p>يبرز المشروع الدور الحاسم لمعالجة الإشارة الرقمية في تحسين جودة الصوت داخل البيئات المغلقة. أظهر محور AEC أن المرشّح التكيفي NLMS قادر على نمذجة المسار الصوتي وطرح الصدى ما دامت شروط طول المرشّح وخطوة التكيّف ونسبة الضجيج مستوفاة. وأوضح محور المحاكاة كيف يربط الطي الرقمي بين الفيزياء الصوتية للغرفة والتطبيق البرمجي، وكيف يعيد المعادل الطيفي تشكيل طاقة الترددات لتحسين الوضوح. الاستنتاج الجوهري هو أن المفاهيم الكهروصوتية الفيزيائية والمعالجة التكيفية وجهان متلازمان لحل واحد.</p>
+
+<h2>13. المراجع (References)</h2>
+<ol class="refs">
+  <li>Haykin, S. <em>Adaptive Filter Theory</em>, 5th ed., Pearson, 2014.</li>
+  <li>Oppenheim, A. V., &amp; Schafer, R. W. <em>Discrete-Time Signal Processing</em>, 3rd ed., Pearson, 2010.</li>
+  <li>Kuttruff, H. <em>Room Acoustics</em>, 6th ed., CRC Press, 2016.</li>
+  <li>Benesty, J., et al. <em>Advances in Network and Acoustic Echo Cancellation</em>, Springer, 2001.</li>
+  <li>Rabiner, L. R., &amp; Schafer, R. W. <em>Digital Processing of Speech Signals</em>, Prentice-Hall, 1978.</li>
+  <li>Proakis, J. G., &amp; Manolakis, D. G. <em>Digital Signal Processing</em>, 4th ed., Pearson, 2007.</li>
+</ol>
+
+</body>
+</html>
